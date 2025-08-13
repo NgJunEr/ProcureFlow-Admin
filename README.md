@@ -1,61 +1,134 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# ProcureFlow Admin - Procurement Management System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+![Laravel Version](https://img.shields.io/badge/Laravel-10.x-FF2D20?style=flat-square&logo=laravel)
+![PHP Version](https://img.shields.io/badge/PHP-8.1+-777BB4?style=flat-square&logo=php)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=flat-square&logo=postgresql)
+![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)
 
-## About Laravel
+ProcureFlow Admin is a role-based procurement management system designed for engineering companies to streamline supplier management, customer relations, and purchase requisition processes.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Table of Contents
+- [Project Overview](#project-overview)
+- [Features](#features)
+- [Database Schema](#database-schema)
+- [Technology Stack](#technology-stack)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Project Overview
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+ProcureFlow Admin addresses the procurement management needs of engineering firms by providing:
 
-## Learning Laravel
+1. **Centralized Information Management**
+2. **Streamlined Purchase Requisition Workflow**
+3. **Role-Based Access Control**
+4. **Supplier and Customer Relationship Management**
+5. **Product Cost and Profit Tracking**
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+The system serves three primary roles:
+- **Managers**: Oversee PR approvals and financial reporting
+- **Sales Department**: Manage customer information and relationships
+- **Purchasing Department**: Handle supplier relations and product sourcing
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## Features
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Manager Role
+- 🚀 **Create/Approve PRs**  
+  Create purchase requisitions linking suppliers/customers, add products, approve requests
+- 📊 **Financial Reports**  
+  View profit reports: ∑(selling_price - buying_price) × quantity
+- 👥 **User Management**  
+  Add/edit staff accounts and assign roles
+- 🔍 **Audit Trail**  
+  Track all system activities and changes
+- **Workflow**: Create PR → Select supplier/customer → Add products → Approve
 
-## Laravel Sponsors
+### Sales Department
+- 👥 **Customer Management**  
+  Add/edit customer records with company/contact details
+- 🔍 **Customer PRs**  
+  View all PRs related to specific customers
+- 📋 **Export Data**  
+  Export customer lists to CSV/PDF
+- 📅 **Engagement History**  
+  Track customer interactions and order history
+- **Workflow**: Add customer → View their PRs → Export contact list
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### Purchasing Department
+- 🏭 **Supplier Management**  
+  Add/edit supplier profiles and contact info
+- 📦 **Product Catalog**  
+  Maintain product database with prices and MOQ
+- 🔍 **Supplier PRs**  
+  View all PRs from specific suppliers
+- 📊 **Performance Monitoring**  
+  Track supplier reliability and delivery times
+- **Workflow**: Add supplier → Update products → View supplier PRs
 
-### Premium Partners
+## Database Schema
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+```sql
+CREATE TABLE suppliers (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    contact VARCHAR(255) NOT NULL,
+    note TEXT,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP
+);
 
-## Contributing
+CREATE TABLE customers (
+    id SERIAL PRIMARY KEY,
+    company_name VARCHAR(255) NOT NULL,
+    contact_name VARCHAR(255) NOT NULL,
+    note TEXT,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP
+);
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+CREATE TABLE prs (
+    id SERIAL PRIMARY KEY,
+    date DATE NOT NULL,
+    supplier_id INTEGER REFERENCES suppliers(id),
+    customer_id INTEGER REFERENCES customers(id),
+    customer_po VARCHAR(255) NOT NULL,
+    status VARCHAR(20) DEFAULT 'pending',
+    note TEXT,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP
+);
 
-## Code of Conduct
+CREATE TABLE pr_products (
+    id SERIAL PRIMARY KEY,
+    pr_id INTEGER REFERENCES prs(id) ON DELETE CASCADE,
+    product_name VARCHAR(255) NOT NULL,
+    quantity INTEGER NOT NULL,
+    moq VARCHAR(50) NOT NULL,
+    buying_price NUMERIC(10, 3) NOT NULL,
+    selling_price NUMERIC(10, 3) NOT NULL,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP
+);
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Technology Stack
 
-## Security Vulnerabilities
+### Backend
+- **Framework**: Laravel 10.x
+- **Database**: PostgreSQL 16
+- **Authentication**: Laravel Breeze
+- **API**: RESTful architecture
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Frontend
+- **Templating**: Blade Components
+- **Styling**: Tailwind CSS + FlowbiteUI
+- **Interactivity**: Laravel Livewire
 
-## License
+### Development & Operations
+- **Version Control**: Git & GitHub
+- **Database Management**: pgAdmin 4
+- **Deployment**: Laravel Forge
+- **CI/CD**: GitHub Actions
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### Key Packages
+```bash
+npm install flowbite
+```
